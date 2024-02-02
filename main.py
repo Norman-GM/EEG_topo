@@ -1,5 +1,4 @@
 from train import Train
-
 def main():
     Train().loso()
 

@@ -1,7 +1,7 @@
 import mne
 import numpy as np
 import matplotlib.pyplot as plt
-
+import os
 SEED_CHANNEL_LIST = [
     'Fp1', 'Fpz', 'Fp2', 'AF3', 'AF4', 'F7', 'F5', 'F3', 'F1', 'Fz', 'F2', 'F4',
     'F6', 'F8', 'FT7', 'FC5', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4', 'FC6', 'FT8',
@@ -11,7 +11,9 @@ SEED_CHANNEL_LIST = [
     'PO10', 'O1', 'Oz', 'O2', 'O9'
 ]
 
-def draw_topo(weight):
+def draw_topo(weight,target_sub_num,iteration):
+    os.makedirs(f'topo/Sub{target_sub_num}/jpg', exist_ok=True)
+    os.makedirs(f'topo/Sub{target_sub_num}/eps', exist_ok=True)
     weight = weight[0]
     delta, theta, alpha, beta, gamma = weight[:62], weight[62:124], weight[124:186], weight[186:248], weight[248:310]
     rol = 1
@@ -27,6 +29,9 @@ def draw_topo(weight):
     for i, (label) in enumerate(['delta', 'theta', 'alpha', 'beta', 'gamma']):
         norm = plt.Normalize(weight.min(), weight.max())
         mne.viz.plot_topomap(weight[i * 62:(i + 1) * 62], info, axes=axes[i], show=False,cnorm=norm)
+    # fig.suptitle(f'DE distribution of three emotion states \n under different frequency bands of target {target_sub_num} on iteration {iteration}', fontsize=40, y=1.01)
     fig.tight_layout()
+    fig.savefig(f'topo/Sub{target_sub_num}/jpg/iteration_{iteration}.jpg', dpi=500)
+    fig.savefig(f'topo/Sub{target_sub_num}/eps/iteration_{iteration}.eps', dpi=500)
     return fig
     # plt.show()

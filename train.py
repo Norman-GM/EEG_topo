@@ -7,6 +7,9 @@ import yaml
 import torch
 import torch.nn as nn
 import math
+import os
+from PIL import Image
+import imageio
 from tensorboardX import SummaryWriter
 class Train():
     def __init__(self):
@@ -61,6 +64,7 @@ class Train():
             iteration = math.ceil(epoch * 820 / batch_size)
         else:
             iteration = 5000
+        iteration = 1000
         log_interval = self.args['log_interval']
         criterion = nn.CrossEntropyLoss().to(device)
 
@@ -94,8 +98,10 @@ class Train():
                 print('Train source' + str(j) + ', iter: {} [({:.0f}%)]\tLoss: {:.6f}'.format(
                     i, 100. * i / iteration, loss.item()))
                 if i % log_interval == 0:
-                    fig = self.get_topo(model)
+                    fig = self.get_topo(model,test_idx,i)
                     self.writer.add_figure('topo', fig, i)
+
+        self.gif_topo(test_idx+1)
         return
 
     def hook_forward(self,module, input, output):
@@ -107,7 +113,23 @@ class Train():
         # print('shape of grad_in:', grad_in[0].shape)
         # print('shape of grad_out:', grad_out[0].shape)
         print('backward')
-    def get_topo(self,model):
+
+    def get_topo(self,model,target_sub_num,iteration):
+
         weight = model.fc1.weight.data.to('cpu').numpy()
-        fig = draw_topo(weight)
+        fig = draw_topo(weight,target_sub_num+1,iteration)
+
         return fig
+
+    def gif_topo(self,target_sub_num):
+        os.makedirs(f'topo/Sub{target_sub_num}/gif', exist_ok=True)
+        image_list = []
+        for filepath, dirnames, filenames in os.walk(f'topo/Sub{target_sub_num}/jpg'):
+            for filename in filenames:
+                if filename.endswith('.jpg'):
+                    image_list.append(Image.open(os.path.join(filepath, filename)))
+
+                print(os.path.join(filepath, filename))
+
+
+        imageio.mimsave(f'topo/Sub{target_sub_num}/gif/topo.gif',image_list)

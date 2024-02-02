@@ -10,11 +10,13 @@ class DumbNetwork(nn.Module):
         self.fc1 = nn.Linear(310, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, 3)
+        self.bn1 = nn.BatchNorm1d(128)
+        self.bn2 = nn.BatchNorm1d(128)
         self.dropout = nn.Dropout(p=0.5)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        x = self.dropout(F.relu(self.fc1(x)))
-        x = self.dropout(F.relu(self.fc2(x)))
+        x = self.bn1(F.relu(self.fc1(x)))
+        x = self.bn2(F.relu(self.fc2(x)))
         x = self.fc3(x)
         return x
